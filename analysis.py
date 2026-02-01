@@ -11,7 +11,7 @@ def analisis_banjir(df):
         kode = row['Kode_Cuaca']
         
         if hujan > 5.0 or kode >= 95:
-            return "BAHAYA (Potensi Banjir)"
+            return "BAHAYA (Potensi Banjir/ Hujan Badai)"
         elif hujan > 1.0 or (60 <= kode <= 65):
             return "WASPADA (Hujan)"
         else:
