@@ -8,9 +8,9 @@ import analysis
 
 st.set_page_config(page_title="Indo Flood Watch", page_icon="🌧️", layout="wide")
 
-st.title(" Sistem Deteksi Dini Banjir Indonesia")
+st.title("Sistem Prediksi Cuaca Sebagai Panduan Aktivitas Masyarakat")
 st.markdown("""
-Menggunakan teknik *JSON API Scraping* untuk memantau potensi banjir.
+Menggunakan teknik *JSON API Scraping* di 50 Kota
 """)
 
 # --- SIDEBAR ---
