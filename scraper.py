@@ -58,34 +58,35 @@ KOTA_PILIHAN = [
 @st.cache_data(ttl=3600)
 def get_weather_data():
     all_data = []
+    # UI Progress Bar
     bar = st.progress(0, text="Menghubungkan ke satelit Open-Meteo...")
     
     for i, kota in enumerate(KOTA_PILIHAN):
         try:
-            url = f"https://api.open-meteo.com/v1/forecast?latitude={kota['lat']}&longitude={kota['lon']}&hourly=precipitation,weathercode&timezone=auto"
+            # Force Timezone Asia/Jakarta
+            url = f"https://api.open-meteo.com/v1/forecast?latitude={kota['lat']}&longitude={kota['lon']}&hourly=precipitation,weathercode&timezone=Asia%2FJakarta"
             
             response = requests.get(url, timeout=10)
-            data = response.json()
-            
-            hourly = data['hourly']
-            times = hourly['time']
-            rains = hourly['precipitation'] 
-            codes = hourly['weathercode']
-            
-            for j in range(len(times)):
-                all_data.append({
+            if response.status_code == 200:
+                data = response.json()
+                hourly = data['hourly']
+                
+                df_city = pd.DataFrame({
                     'Kota': kota['nama'],
                     'Latitude': kota['lat'],
                     'Longitude': kota['lon'],
-                    'Waktu_Str': times[j],
-                    'Curah_Hujan_mm': float(rains[j]),
-                    'Kode_Cuaca': codes[j]
+                    'Waktu_Str': hourly['time'],
+                    'Curah_Hujan_mm': hourly['precipitation'],
+                    'Kode_Cuaca': hourly['weathercode']
                 })
+                all_data.append(df_city)
                 
             bar.progress((i + 1) / len(KOTA_PILIHAN), text=f"Mengambil data: {kota['nama']}")
             
-        except Exception as e:
+        except Exception:
             continue
             
     bar.empty()
-    return pd.DataFrame(all_data)
+    if all_data:
+        return pd.concat(all_data, ignore_index=True)
+    return pd.DataFrame()
