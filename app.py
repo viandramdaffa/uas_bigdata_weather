@@ -47,26 +47,25 @@ with st.spinner("Menganalisis data aktivitas..."):
             
         view_df = final_df[final_df['Waktu'].dt.date == target_date.date()].copy()
         
-        # 4. Risk Calculation & Feature Engineering
+        # 4. Risk Calculation (LOGIC ORIGINAL)
         if not view_df.empty:
-            data_hujan_deras = view_df[view_df['Curah_Hujan_mm'] > 5.0]
-            durasi_hujan = data_hujan_deras.groupby('Kota').size()
-
             def get_activity_status(row):
-                kota = row['Kota']
-                jam_hujan_deras = durasi_hujan.get(kota, 0)
+                hujan = row['Curah_Hujan_mm']
+                kode = row['Kode_Cuaca']
                 
-                # Logic: 3 (Danger), 2 (Warning), 1 (Safe)
-                if jam_hujan_deras >= 3 or row['Kode_Cuaca'] >= 99: 
-                    return 3 
-                elif jam_hujan_deras >= 1 or row['Kode_Cuaca'] >= 60: 
-                    return 2 
-                return 1 
-            
-            # Create the column explicitly to prevent KeyError
+                # MERAH: Hujan lebat (>5mm) ATAU Badai Petir (Kode >= 95)
+                if hujan > 5.0 or kode >= 95:
+                    return 3
+                # KUNING: Hujan sedang (>1mm) ATAU Hujan Ringan (Kode 60-85)
+                elif hujan > 1.0 or (60 <= kode <= 85):
+                    return 2
+                # HIJAU: Sisanya
+                else:
+                    return 1
+
             view_df['Status_Aktivitas'] = view_df.apply(get_activity_status, axis=1)
             
-            # Sort data by Risk Level
+            # Sort data: Prioritas Bahaya (3) paling atas
             map_data = view_df.sort_values(['Status_Aktivitas', 'Curah_Hujan_mm'], ascending=[False, False]).drop_duplicates('Kota')
         else:
             map_data = pd.DataFrame()
@@ -132,9 +131,9 @@ with st.spinner("Menganalisis data aktivitas..."):
                     st.write("### Panduan Warna")
                     st.markdown("""
                     <div style="background-color: #262730; padding: 15px; border-radius: 10px; border: 1px solid #444;">
-                        <div style="margin-bottom: 10px;"><span style='color: red; font-size: 20px;'>⬤</span> <b>TIDAK KONDUSIF</b><br><span style="font-size: 11px;">Tunda aktivitas outdoor.</span></div>
-                        <div style="margin-bottom: 10px;"><span style='color: orange; font-size: 20px;'>⬤</span> <b>WASPADA</b><br><span style="font-size: 11px;">Siapkan payung/jas hujan.</span></div>
-                        <div style="margin-bottom: 10px;"><span style='color: green; font-size: 20px;'>⬤</span> <b>KONDUSIF</b><br><span style="font-size: 11px;">Aman untuk beraktivitas.</span></div>
+                        <div style="margin-bottom: 10px;"><span style='color: red; font-size: 20px;'>⬤</span> <b>TIDAK KONDUSIF</b><br><span style="font-size: 11px;">Hujan Deras (>5mm) / Badai.</span></div>
+                        <div style="margin-bottom: 10px;"><span style='color: orange; font-size: 20px;'>⬤</span> <b>WASPADA</b><br><span style="font-size: 11px;">Hujan Sedang / Gerimis.</span></div>
+                        <div style="margin-bottom: 10px;"><span style='color: green; font-size: 20px;'>⬤</span> <b>KONDUSIF</b><br><span style="font-size: 11px;">Cerah / Berawan.</span></div>
                     </div>
                     """, unsafe_allow_html=True)
 
