@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 import datetime
 
-# DAFTAR 50 KOTA (Sama seperti sebelumnya)
+
 KOTA_PILIHAN = [
     {"nama": "Jakarta Pusat", "lat": -6.1805, "lon": 106.8284},
     {"nama": "Jakarta Selatan", "lat": -6.2615, "lon": 106.8106},
