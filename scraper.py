@@ -58,6 +58,7 @@ KOTA_PILIHAN = [
 @st.cache_data(ttl=3600)
 def get_weather_data():
     all_data = []
+    
     bar = st.progress(0, text="Menghubungkan ke satelit Open-Meteo...")
     
     for i, kota in enumerate(KOTA_PILIHAN):
